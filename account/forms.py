@@ -18,6 +18,12 @@ class UserRegistrationForm(forms.ModelForm):
             raise forms.ValidationError("Passwords don't match")
         return password2
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Email already in use")
+        return email
+
     def save(self, commit=True):
         # Save the provided password in hashed format
         user = super().save(commit=False)
@@ -31,3 +37,9 @@ class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email", "date_of_birth", "photo"]
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            raise forms.ValidationError("Email already in use")
+        return email
